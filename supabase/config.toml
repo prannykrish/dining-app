@@ -1,0 +1,11 @@
+[functions.menus]
+verify_jwt = false
+
+[functions.reviews]
+verify_jwt = false
+
+[functions.scrape-menus]
+verify_jwt = true
+
+[functions.station]
+verify_jwt = false

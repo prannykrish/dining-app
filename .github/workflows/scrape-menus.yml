@@ -1,0 +1,44 @@
+name: Scrape Daily Menus
+
+on:
+  schedule:
+    # 8:00 AM CST = 14:00 UTC, runs every day
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Date to scrape (YYYY-MM-DD). Defaults to today."
+        required: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Install Python dependencies
+        run: pip install -r scraper/requirements.txt
+
+      - name: Install Playwright browsers
+        run: python -m playwright install chromium --with-deps
+
+      - name: Run scraper
+        working-directory: scraper
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            python scraper.py --date "${{ github.event.inputs.date }}"
+          else
+            python scraper.py
+          fi
